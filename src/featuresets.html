@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Featureset Toggle</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+    #featuresetContainer {
+        text-align: center;
+    }
+    table {
+        margin: 0 auto;
+        width: 80%;
+        background-color: #1a1c1e;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #dd9933;
+        padding: 10px;
+        text-align: center;
+        color: #dd9933;
+        font-family: "RocknRoll One", sans-serif;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+        vertical-align: middle;
+        opacity: 0.7;
+    }
+    .switch input { display:none; }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(221, 153, 51, 1);
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "\00D7";
+        height: 26px;
+        width: 26px;
+        left: 2px;
+        bottom: 2px;
+        background-color: #000000;
+        transition: .4s;
+        text-align: center;
+        line-height: 26px;
+        color: #ffffff;
+        font-size: 20px;
+    }
+    input:checked + .slider {
+        background-color: #dd9933;
+    }
+    input:checked + .slider:before {
+        content: "\2713";
+        background-color: #000000;
+        transform: translateX(28px);
+    }
+    .slider.round {
+        border-radius: 20px;
+    }
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+</head>
+<body>
+    <div id="featuresetContainer">
+        <h1>Group Title Here</h1> <!-- Replace with the group title -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="featureRows">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $.get('/2/src/get-feature-sets.php', function(data) {
+                if (data && Array.isArray(data.enable_features) && Array.isArray(data.disable_features)) {
+                    data.enable_features.forEach(function(feature) {
+                        $('#featureRows').append('<tr><td>' + feature.feature_name + '</td><td>' + feature.feature_description + '</td><td><label class="switch"><input type="checkbox" id="' + feature.id + '" checked><span class="slider round"></span></label></td></tr>');
+                    });
+                    data.disable_features.forEach(function(feature) {
+                        $('#featureRows').append('<tr><td>' + feature.feature_name + '</td><td>' + feature.feature_description + '</td><td><label class="switch"><input type="checkbox" id="' + feature.id + '"><span class="slider round"></span></label></td></tr>');
+                    });
+                }
+            });
+            $(document).on('change', 'input[type="checkbox"]', function() {
+                const id = this.id;
+                const isEnabled = this.checked ? 1 : 0;
+                $.post('/2/src/update-feature-set.php', { id, isEnabled });
+            });
+        });
+    </script>
+</body>
+</html>
